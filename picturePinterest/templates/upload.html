@@ -1,0 +1,50 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Images</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <ul class="nav-list">
+    <li class="nav-item"><a href="{% url 'upload' %}">Upload</a></li>
+    <li class="nav-item"><a href="{% url 'compare' %}">Compare</a></li>
+    <li class="nav-item"><a href="{% url 'results' %}">Results</a></li>
+    <li class="nav-item"><a href="{% url 'reset' %}">Start Over</a></li>
+  </ul>
+</nav>
+
+<h1>Upload Images</h1>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="file" name="images" accept="image/*" multiple required>
+  <button type="submit" class="btn">Upload</button>
+</form>
+
+<div id="preview-grid"></div>
+
+<script>
+const upload = document.querySelector('input[name="images"]');
+const previewGrid = document.getElementById("preview-grid");
+
+upload.addEventListener("change", () => {
+  previewGrid.innerHTML = "";
+  Array.from(upload.files).forEach(file => {
+    if (!file.type.startsWith("image/")) return;
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    img.style.width = "150px";
+    img.style.margin = "5px";
+    previewGrid.appendChild(img);
+  });
+});
+</script>
+
+</body>
+</html>

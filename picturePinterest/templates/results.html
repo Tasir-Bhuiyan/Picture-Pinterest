@@ -1,0 +1,84 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Final Images</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <ul class="nav-list">
+    <li class="nav-item"><a href="{% url 'upload' %}">Upload</a></li>
+    <li class="nav-item"><a href="{% url 'compare' %}">Compare</a></li>
+    <li class="nav-item"><a href="{% url 'results' %}">Results</a></li>
+    <li class="nav-item"><a href="{% url 'reset' %}">Start Over</a></li>
+  </ul>
+</nav>
+
+<h1>Final Selected Images</h1>
+<p>Click images to select them, then press "Download Selected"</p>
+
+<div id="results-grid" style="display:flex; flex-wrap:wrap;">
+  {% for img in images %}
+  <div class="selectable" style="margin:5px; border:2px solid transparent; cursor:pointer;">
+    <img src="{{ img }}" style="width:200px;">
+  </div>
+  {% endfor %}
+</div>
+
+<button id="download-btn">Download Selected</button>
+
+<script>
+const grid = document.getElementById("results-grid");
+grid.querySelectorAll(".selectable").forEach(wrapper => {
+  wrapper.addEventListener("click", () => {
+    wrapper.classList.toggle("selected");
+    wrapper.style.border = wrapper.classList.contains("selected") ? "2px solid #00f" : "2px solid transparent";
+  });
+});
+
+document.getElementById("download-btn").addEventListener("click", async () => {
+  const selectedImages = document.querySelectorAll(".selected img");
+  
+  if (selectedImages.length === 0) {
+    alert("Please select at least one image to download.");
+    return;
+  }
+
+  for (const img of selectedImages) {
+    try {
+      // Fetch the image data
+      const response = await fetch(img.src);
+      const blob = await response.blob();
+      
+      // Create a temporary object URL
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      
+      // Generate a filename from the URL or a timestamp
+      const filename = img.src.split('/').pop() || "download.jpg";
+      
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      // Small delay to ensure browser handles multiple downloads
+      await new Promise(resolve => setTimeout(resolve, 200)); 
+    } catch (err) {
+      console.error("Download failed for:", img.src, err);
+    }
+  }
+});
+</script>
+
+</body>
+</html>

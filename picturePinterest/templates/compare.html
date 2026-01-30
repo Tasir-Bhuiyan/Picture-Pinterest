@@ -1,0 +1,62 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Compare Images</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <ul class="nav-list">
+    <li class="nav-item"><a href="{% url 'upload' %}">Upload</a></li>
+    <li class="nav-item"><a href="{% url 'compare' %}">Compare</a></li>
+    <li class="nav-item"><a href="{% url 'results' %}">Results</a></li>
+    <li class="nav-item"><a href="{% url 'reset' %}">Start Over</a></li>
+  </ul>
+</nav>
+
+<h1>Compare Images</h1>
+
+<div class="comparison">
+<img id="left-img" src="{{ img1 }}" data-choice="0">
+<img id="right-img" src="{{ img2 }}" data-choice="1">
+
+
+</div>
+
+<p class="instructions">⬅️ Left = Better | ➡️ Right = Better</p>
+
+<script>
+const groupIndex = {{ group_index }};
+
+function sendChoice(choice) {
+  fetch("{% url 'select_image' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `group_index=${groupIndex}&choice=${choice}`
+  }).then(() => {
+    window.location.reload();
+  });
+}
+
+// Click events
+document.getElementById("left-img").addEventListener("click", () => sendChoice(0));
+document.getElementById("right-img").addEventListener("click", () => sendChoice(1));
+
+// Arrow keys
+document.addEventListener("keydown", (e) => {
+  if(e.key === "ArrowLeft") sendChoice(0);
+  if(e.key === "ArrowRight") sendChoice(1);
+});
+</script>
+
+</body>
+</html>
+
